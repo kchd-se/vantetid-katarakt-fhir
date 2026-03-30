@@ -1,23 +1,23 @@
 # FHIR-transformering Katarakt — Distributionspaket
 
-Omvandlar resultatvyer från `vantetid-katarakt` till FHIR MeasureReport-format,
-från Vårddatahubben (KCHD, SKR).
+Omvandlar resultatvyer från `vantetid-katarakt` till FHIR R4 MeasureReport-format
+via en C#/Python-pipeline, från Vårddatahubben (KCHD, SKR).
 
 ## Syfte
 
 Detta paket tar resultaten från beräkningspaketet (`vantetid-katarakt`) och
-transformerar dem till FHIR R4 MeasureReport-resurser. Vyerna i detta paket
-skapar inga egna beräkningar — de läser från `res_kpi_*`-vyerna och mappar
-till FHIR-struktur.
+transformerar dem till FHIR R4 MeasureReport-resurser. Pipelinen består av:
+
+- **VQL** — vyer i Denodo som mappar beräknade KPI:er till FHIR-struktur
+- **Python** — datahämtning från Denodo och validering
+- **C#** — FHIR-serialisering med Firely SDK
 
 ## Mappstruktur
 
 ```
-vql/
-├── 02_berakning/      FHIR-transformering (ref_fhir_system, fhir_measure_report)
-├── 04_verifiering/    (tom tills vidare)
-└── 05_kvalitet/       (tom tills vidare)
-tests/                 Testfiler för verifiering
+csharp/                C#-pipeline (FHIR-serialisering)
+python/                Python-pipeline (datahämtning, validering)
+vql/                   VQL-vyer för FHIR-mappning (Denodo)
 docs/                  Dokumentation
 ```
 
@@ -36,14 +36,9 @@ Paketet förutsätter att följande vyer redan finns (från `vantetid-katarakt`)
 
 1. Installera först `vantetid-katarakt` och kör dess VQL-filer
 2. Klona detta repo
-3. Kör `vql/02_berakning/fhir_paket.vql` mot er Denodo-instans
-
-## Skapade vyer
-
-| Vy                    | Beskrivning                              |
-|-----------------------|------------------------------------------|
-| `ref_fhir_system`     | Alla system-URI:er (bytbara)             |
-| `fhir_measure_report` | Alla nyckeltal → MeasureReport-rader     |
+3. Kör VQL-vyerna i `vql/` mot er Denodo-instans
+4. Konfigurera Python-pipelinen i `python/`
+5. Bygg och kör C#-pipelinen i `csharp/`
 
 ## Versionshantering
 
