@@ -14,9 +14,7 @@ MeasureReport-resurser via en C#/Python-pipeline.
 
 ```
 csharp/                C#-pipeline (FHIR-serialisering)
-python/                Python-pipeline (datahämtning, validering)
 vql/                   VQL-vyer för FHIR-mappning (Denodo)
-docs/                  Dokumentation
 ```
 
 ## Branch-modell
