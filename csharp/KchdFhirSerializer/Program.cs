@@ -12,7 +12,7 @@ using KchdFhirSerializer;
 var inputPath = "";
 var outputPath = "fhir_bundle.json";
 var validate = false;
-var reportDate = "2026-03-26";
+var reportDate = DateTime.Today.ToString("yyyy-MM-dd");
 string? odbcConnection = null;
 string? schema = null;
 string query = "SELECT * FROM fhir_measure_report";
