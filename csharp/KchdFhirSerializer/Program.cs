@@ -14,6 +14,7 @@ var outputPath = "fhir_bundle.json";
 var validate = false;
 var reportDate = "2026-03-26";
 string? odbcConnection = null;
+string? schema = null;
 string query = "SELECT * FROM fhir_measure_report";
 
 for (int i = 0; i < args.Length; i++)
@@ -26,11 +27,16 @@ for (int i = 0; i < args.Length; i++)
         reportDate = args[++i];
     else if (args[i] is "--odbc")
         odbcConnection = args[++i];
+    else if (args[i] is "--schema")
+        schema = args[++i];
     else if (args[i] is "--query")
         query = args[++i];
     else if (!args[i].StartsWith("-"))
         inputPath = args[i];
 }
+
+if (!string.IsNullOrEmpty(schema) && query == "SELECT * FROM fhir_measure_report")
+    query = $"SELECT * FROM \"{schema}\".fhir_measure_report";
 
 // 1. Läs rader — ODBC eller TSV
 List<Dictionary<string, string>> rows;
@@ -48,7 +54,7 @@ else
 {
     Console.Error.WriteLine("Användning:");
     Console.Error.WriteLine("  KchdFhirSerializer <input.tsv> [-o output.json] [-v] [-d datum]");
-    Console.Error.WriteLine("  KchdFhirSerializer --odbc \"DSN=DenodoVGR\" [--query \"SELECT...\"] [-o output.json] [-v]");
+    Console.Error.WriteLine("  KchdFhirSerializer --odbc \"DSN=DenodoVGR\" [--schema Datamart] [-o output.json] [-v]");
     return 1;
 }
 

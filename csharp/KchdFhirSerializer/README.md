@@ -35,11 +35,18 @@ dotnet run -- <input.tsv> -o <output.json> -v
 dotnet run -- --odbc "DSN=DenodoVGR" -o fhir_bundle.json -v
 ```
 
+### Med schema-prefix (VGR)
+```bash
+dotnet run -- --odbc "DSN=DenodoODBC-dev" --schema Datamart_Tillgänglighet -o fhir_bundle.json -v
+```
+Genererar frågan: `SELECT * FROM "Datamart_Tillgänglighet".fhir_measure_report`
+
 ### Alla flaggor
 | Flagga | Beskrivning |
 |--------|-------------|
 | `<fil>` | TSV/CSV-input |
 | `--odbc <sträng>` | ODBC-anslutningssträng |
+| `--schema <namn>` | Denodo-schema att prefixera vynamnet med (t.ex. `Datamart_Tillgänglighet`) |
 | `--query <SQL>` | SQL-fråga (default: `SELECT * FROM fhir_measure_report`) |
 | `-o, --output` | Output-fil (default: `fhir_bundle.json`) |
 | `-v, --validate` | Validera FHIR-output |
@@ -87,7 +94,7 @@ Inga förkunskaper krävs på servern — .NET runtime ingår i .exe:n.
 1. Lägg till ett **Execute Process Task** i SSIS-paketet
 2. Konfiguration:
    - **Executable:** `C:\sökväg\KchdFhirSerializer\KchdFhirSerializer.exe`
-   - **Arguments:** `--odbc "DSN=DenodoVGR" -o C:\output\fhir_bundle.json -v`
+   - **Arguments:** `--odbc "DSN=DenodoODBC-dev" --schema Datamart_Tillgänglighet -o C:\output\fhir_bundle.json -v`
    - **WorkingDirectory:** `C:\sökväg\KchdFhirSerializer\`
 3. Programmet läser från Denodos `fhir_measure_report`-vy, bygger FHIR Bundle, validerar, och skriver JSON
 

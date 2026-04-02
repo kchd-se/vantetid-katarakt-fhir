@@ -4,6 +4,12 @@ Alla väsentliga ändringar i detta projekt dokumenteras i denna fil.
 Formatet baseras på [Keep a Changelog](https://keepachangelog.com/sv/1.0.0/)
 och projektet följer [Semantic Versioning](https://semver.org/lang/sv/).
 
+## [1.0.1] — 2026-04-02
+
+### Tillagt
+- Ny parameter `--schema` för att prefixera vynamnet med Denodo-schema
+- VGR kan nu köra: `KchdFhirSerializer.exe --odbc "DSN=DenodoODBC-dev" --schema Datamart_Tillgänglighet`
+
 ## [1.0.0] — 2026-03-30
 
 ### Tillagt
