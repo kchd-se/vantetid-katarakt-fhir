@@ -15,6 +15,7 @@ public static class MeasureReportBuilder
     private static decimal? SafeDecimal(string? v)
     {
         if (string.IsNullOrWhiteSpace(v)) return null;
+        if (v is "None" or "NULL" or "null" or "NaN" or "nan" or "NA" or "N/A") return null;
         return decimal.TryParse(v, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : null;
     }
 
@@ -100,14 +101,16 @@ public static class MeasureReportBuilder
                     "increase");
             }
 
-            // Groups från totalrader
+            // Groups från totalrader — spara mapping group_code → index
+            var groupByCode = new Dictionary<string, int>();
             foreach (var t in totals)
             {
+                var groupCode = Get(t, "group_code");
                 var fhirGroup = new MeasureReport.GroupComponent
                 {
                     Code = new CodeableConcept
                     {
-                        Coding = { new Coding { Code = Get(t, "group_code") } }
+                        Coding = { new Coding { Code = groupCode } }
                     }
                 };
 
@@ -128,14 +131,26 @@ public static class MeasureReportBuilder
                 // Inbäddade stratifiers (kön, ålder, väntetidsintervall)
                 fhirGroup.Stratifier.AddRange(BuildInlineStratifiers(t));
 
+                groupByCode[groupCode] = mr.Group.Count;
                 mr.Group.Add(fhirGroup);
             }
 
-            // Per-dimension stratifiers → group[0]
+            // Per-dimension stratifiers → matcha mot rätt group via group_code
             foreach (var dimType in dims.Keys.OrderBy(k => k))
             {
-                var stratifier = BuildDimensionStratifier(dimType, dims[dimType]);
-                mr.Group[0].Stratifier.Add(stratifier);
+                // Gruppera dimension-rader per group_code
+                var dimByGroup = dims[dimType]
+                    .GroupBy(r => Get(r, "group_code"))
+                    .OrderBy(g => g.Key);
+
+                foreach (var grp in dimByGroup)
+                {
+                    var stratifier = BuildDimensionStratifier(dimType, grp.ToList());
+                    if (groupByCode.TryGetValue(grp.Key, out var idx))
+                        mr.Group[idx].Stratifier.Add(stratifier);
+                    else if (mr.Group.Count > 0)
+                        mr.Group[0].Stratifier.Add(stratifier); // fallback
+                }
             }
 
             bundle.Entry.Add(new Bundle.EntryComponent { Resource = mr });

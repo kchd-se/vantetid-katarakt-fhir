@@ -19,9 +19,21 @@ public static class DenodoReader
         var rows = new List<Dictionary<string, string>>();
 
         using var conn = new OdbcConnection(connectionString);
-        conn.Open();
+        try
+        {
+            conn.Open();
+        }
+        catch (OdbcException ex)
+        {
+            throw new InvalidOperationException(
+                $"Kunde inte ansluta till Denodo via ODBC.\n" +
+                $"  ConnectionString: {connectionString}\n" +
+                $"  Kontrollera att DSN:en finns i ODBC Data Sources (64-bit).\n" +
+                $"  ODBC-fel: {ex.Message}", ex);
+        }
 
         using var cmd = new OdbcCommand(query, conn);
+        cmd.CommandTimeout = 300; // 5 minuter
         using var reader = cmd.ExecuteReader();
 
         var columns = new List<string>();
@@ -30,7 +42,7 @@ public static class DenodoReader
 
         while (reader.Read())
         {
-            var row = new Dictionary<string, string>();
+            var row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < columns.Count; i++)
             {
                 var val = reader.IsDBNull(i) ? "" : reader.GetValue(i)?.ToString() ?? "";
@@ -64,7 +76,7 @@ public static class DenodoReader
                 continue;
 
             var values = lines[i].Split(sep);
-            var row = new Dictionary<string, string>();
+            var row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             for (int j = 0; j < headers.Length; j++)
                 row[headers[j]] = j < values.Length ? values[j] : "";
             rows.Add(row);
